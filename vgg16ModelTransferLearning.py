@@ -21,8 +21,8 @@ train_benign_file = "train-benign.npy"
 validation_melanoma_file = "validation-melanoma.npy"
 validation_benign_file = "validation-benign.npy"
 
-nb_train_samples = 576
-nb_validation_samples = 144
+nb_train_samples = 9216
+nb_validation_samples = 2304
 
 epochs = 100
 
@@ -30,82 +30,66 @@ batch_size = 16
 
 
 def saveBottleneckTransferValues():
-    train_melanoma_data = np.load(open(train_melanoma_file))
-    train_benign_data = np.load(open(train_benign_file))
+    VGG16 Model
+    model = applications.VGG16(include_top = False, weights = "imagenet")
 
-    validation_melanoma_data = np.load(open(validation_melanoma_file))
-    validation_benign_data = np.load(open(validation_benign_file))
-
-    print train_melanoma_data.shape
-
-    # VGG16 Model
-    # model = applications.VGG16(include_top = False, weights = "imagenet")
-
-    # datagen = ImageDataGenerator(
-        # rescale = 1./255
-    # )
-
-
+    datagen = ImageDataGenerator(
+        rescale = 1./255
+    )
 
     # Training
-    # train_datagen = ImageDataGenerator(
-    #     rescale = 1./255,
-    #     rotation_range = 40,
-    #     width_shift_range = 0.1,
-    #     height_shift_range = 0.1,
-    #     shear_range = 0.1,
-    #     zoom_range = 0.1,
-    #     horizontal_flip = True,
-    #     fill_mode = "nearest"
-    # )
+    train_datagen = ImageDataGenerator(
+        rescale = 1./255,
+        # rotation_range = 40,
+        # width_shift_range = 0.1,
+        # height_shift_range = 0.1,
+        # shear_range = 0.1,
+        # zoom_range = 0.1,
+        # horizontal_flip = True,
+        # fill_mode = "nearest"
+    )
 
-    # train_generator = train_datagen.flow_from_directory(
-    #     train_data_dir,
-    #     target_size = (img_width, img_height),
-    #     batch_size = batch_size,
-    #     class_mode = "binary",
-    #     shuffle = False,
-    #     save_to_dir = train_aug_data_dir,
-    #     save_prefix = "train",
-    #     save_format = "jpg",
-    #     follow_links = True
-    # )
+    train_generator = train_datagen.flow_from_directory(
+        train_data_dir,
+        target_size = (img_width, img_height),
+        batch_size = batch_size,
+        class_mode = "binary",
+        shuffle = False
+    )
 
-    # train_transfer_values, train_transfer_labels = model.predict_generator(
-    #     train_generator,
-    #     nb_train_samples // batch_size
-    # )
+    train_transfer_values, train_transfer_labels = model.predict_generator(
+        train_generator,
+        nb_train_samples // batch_size
+    )
 
-    # print("Train Transfer Values Shape : {0} ".format(train_transfer_values.shape))
-    # print("Train Transfer Labels Shape : {0} ".format(train_transfer_labels.shape))
+    print("Train Transfer Values Shape : {0} ".format(train_transfer_values.shape))
+    print("Train Transfer Labels Shape : {0} ".format(train_transfer_labels.shape))
 
-    # np.save(open("train-transfer-values.npy", "w"), train_transfer_values)
+    np.save(open("train-transfer-values.npy", "w"), train_transfer_values)
 
 
     # Validation
-    # validation_datagen = ImageDataGenerator(rescale=1./255)    
+    validation_datagen = ImageDataGenerator(
+        rescale=1./255
+    )    
 
-    # validation_generator = validation_datagen.flow_from_directory(
-    #     validation_data_dir,
-    #     target_size = (img_width, img_height),
-    #     batch_size = batch_size,
-    #     class_mode = "binary",
-    #     shuffle = False,
-    #     save_to_dir = train_aug_data_dir,
-    #     save_prefix = "validation",
-    #     save_format = "jpg",
-    #     follow_links = True
-    # )
+    validation_generator = validation_datagen.flow_from_directory(
+        validation_data_dir,
+        target_size = (img_width, img_height),
+        batch_size = batch_size,
+        class_mode = "binary",
+        shuffle = False
+    )
 
-    # validation_transfer_values, validation_transfer_labels = model.predict_generator(
-    #     validation_generator,
-    #     nb_validation_samples // batch_size 
-    # )
+    validation_transfer_values, validation_transfer_labels = model.predict_generator(
+        validation_generator,
+        nb_validation_samples // batch_size 
+    )
 
-    # print("Validation Transfer Value Shape : {0}".format(validation_transfer_values.shape))
-    # print("Validation Transfer Labels Shape : {0}".format(validation_transfer_labels.shape))
+    print("Validation Transfer Value Shape : {0}".format(validation_transfer_values.shape))
+    print("Validation Transfer Labels Shape : {0}".format(validation_transfer_labels.shape))
 
-    # np.save(open("validation-tansfer-values.npy", "w"), validation_transfer_values)
+    np.save(open("validation-tansfer-values.npy", "w"), validation_transfer_values)
 
 
 def trainTopModel():
