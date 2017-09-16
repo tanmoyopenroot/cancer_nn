@@ -5,6 +5,7 @@ from keras.models import Sequential
 from keras.layers import Dropout, Flatten, Dense
 from keras import applications
 from keras import regularizers
+from keras import optimizers
 
 img_width, img_height = 224, 224
 
@@ -16,15 +17,10 @@ validation_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/IS
 train_aug_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/aug/train'
 validation_aug_data_dir = "/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/aug/validation"
 
-train_melanoma_file = "train-melanoma.npy"
-train_benign_file = "train-benign.npy"
-validation_melanoma_file = "validation-melanoma.npy"
-validation_benign_file = "validation-benign.npy"
-
 nb_train_samples = 9216
 nb_validation_samples = 2304
 
-epochs = 100
+epochs = 50
 
 batch_size = 16
 
@@ -99,15 +95,20 @@ def trainTopModel():
 
     model = Sequential()
     model.add(Flatten(input_shape = train_data.shape[1:]))
-    # model.add(Dense(512, activation = "relu"))
-    # model.add(Dropout(0.7))
+    model.add(Dense(512, activation = "relu"))
+    model.add(Dropout(0.7))
     model.add(Dense(256, activation = "relu"))
     model.add(Dropout(0.7))
     model.add(Dense(1, activation = "sigmoid"))
 
-    model.compile(optimizer = "rmsprop", 
-        loss = "binary_crossentropy", 
-        metrics = ["accuracy"]
+    # model.compile(optimizer = "rmsprop", 
+    #     loss = "binary_crossentropy", 
+    #     metrics = ["accuracy"]
+    # )
+
+    model.compile(loss='binary_crossentropy',
+        optimizer=optimizers.SGD(lr=0.01e-4, momentum=0.9),
+        metrics=['accuracy']
     )
 
     history = model.fit(train_data, train_labels, 
@@ -142,8 +143,8 @@ def trainTopModel():
     model.save_weights(top_model_weights_path)
 
 def main():
-    saveBottleneckTransferValues()
-    # trainTopModel()
+    # saveBottleneckTransferValues()
+    trainTopModel()
 
 if __name__ == '__main__':
     main()
