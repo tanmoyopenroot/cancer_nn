@@ -30,7 +30,7 @@ batch_size = 16
 
 
 def saveBottleneckTransferValues():
-    VGG16 Model
+    # VGG16 Model
     model = applications.VGG16(include_top = False, weights = "imagenet")
 
     datagen = ImageDataGenerator(
@@ -50,20 +50,19 @@ def saveBottleneckTransferValues():
     )
 
     train_generator = train_datagen.flow_from_directory(
-        train_data_dir,
+        train_aug_data_dir,
         target_size = (img_width, img_height),
         batch_size = batch_size,
-        class_mode = "binary",
+        class_mode = None,
         shuffle = False
     )
 
-    train_transfer_values, train_transfer_labels = model.predict_generator(
+    train_transfer_values = model.predict_generator(
         train_generator,
         nb_train_samples // batch_size
     )
 
     print("Train Transfer Values Shape : {0} ".format(train_transfer_values.shape))
-    print("Train Transfer Labels Shape : {0} ".format(train_transfer_labels.shape))
 
     np.save(open("train-transfer-values.npy", "w"), train_transfer_values)
 
@@ -74,20 +73,19 @@ def saveBottleneckTransferValues():
     )    
 
     validation_generator = validation_datagen.flow_from_directory(
-        validation_data_dir,
+        validation_aug_data_dir,
         target_size = (img_width, img_height),
         batch_size = batch_size,
-        class_mode = "binary",
+        class_mode = None,
         shuffle = False
     )
 
-    validation_transfer_values, validation_transfer_labels = model.predict_generator(
+    validation_transfer_values = model.predict_generator(
         validation_generator,
         nb_validation_samples // batch_size 
     )
 
     print("Validation Transfer Value Shape : {0}".format(validation_transfer_values.shape))
-    print("Validation Transfer Labels Shape : {0}".format(validation_transfer_labels.shape))
 
     np.save(open("validation-tansfer-values.npy", "w"), validation_transfer_values)
 
