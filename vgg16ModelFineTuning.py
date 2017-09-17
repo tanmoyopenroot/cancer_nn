@@ -10,7 +10,7 @@ from keras.preprocessing.image import ImageDataGenerator
 
 img_width, img_height = 224, 224
 
-top_model_weights_path = "isic-vgg16-transfer-learning-07-100e.h5"
+top_model_weights_path = "isic-vgg16-transfer-learning-07-l2-300e.h5"
 
 train_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/train'
 validation_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/validation'
@@ -25,21 +25,24 @@ epochs = 100
 
 batch_size = 16
 
-#VGG16 Model
-model = applications.VGG16(
-    include_top = False, 
-    weights = "imagenet"
-)
+# VGG16 Model
+base_model = applications.VGG16(include_top = False, weights = "imagenet", input_shape = (224,224,3))
 
 # Top Model
 top_model = Sequential()
-top_model.add(Flatten(input_shape=model.output_shape[1:]))
+top_model.add(Flatten(input_shape=base_model.output_shape[1:]))
+top_model.add(Dense(512, activation = "relu"))
+top_model.add(Dropout(0.7))
 top_model.add(Dense(256, activation = "relu"))
 top_model.add(Dropout(0.7))
 top_model.add(Dense(1, activation = "sigmoid"))
 
 # Add Weights
 top_model.load_weights(top_model_weights_path)
+
+model = Sequential()
+for layer in base_model.layers:
+    model.add(layer)
 
 model.add(top_model)
 
@@ -87,10 +90,10 @@ validation_generator = test_datagen.flow_from_directory(
 
 history = model.fit_generator(
     train_generator,
-    samples_per_epoch = nb_train_samples,
+    steps_per_epoch = nb_train_samples // batch_size,
     epochs = epochs,
     validation_data = validation_generator,
-    nb_val_samples = nb_validation_samples
+    validation_steps = nb_validation_samples // batch_size
 )
 
 # list all data in history
