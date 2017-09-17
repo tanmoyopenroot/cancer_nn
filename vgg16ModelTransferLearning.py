@@ -20,7 +20,7 @@ validation_aug_data_dir = "/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-t
 nb_train_samples = 9216
 nb_validation_samples = 2304
 
-epochs = 50
+epochs = 300
 
 batch_size = 16
 
@@ -107,7 +107,7 @@ def trainTopModel():
     # )
 
     model.compile(loss='binary_crossentropy',
-        optimizer=optimizers.SGD(lr=0.01e-4, momentum=0.9),
+        optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
         metrics=['accuracy']
     )
 
