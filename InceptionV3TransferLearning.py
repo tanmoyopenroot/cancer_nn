@@ -2,14 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential
-from keras.layers import Dropout, Flatten, Dense
+from keras.layers import Dropout, Flatten, Dense, GlobalAveragePooling2D
 from keras import applications
 from keras import regularizers
 from keras import optimizers
 
-img_width, img_height = 224, 224
+img_width, img_height = 299, 299
 
-top_model_weights_path = "isic-vgg16-transfer-learning.h5"
+top_model_weights_path = "isic-inceptionV3-transfer-learning.h5"
 
 train_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/train'
 validation_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/validation'
@@ -20,14 +20,17 @@ validation_aug_data_dir = "/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-t
 nb_train_samples = 9216
 nb_validation_samples = 2304
 
-epochs = 300
+epochs = 50
 
-batch_size = 16
+batch_size = 32
 
 
 def saveBottleneckTransferValues():
     # VGG16 Model
-    model = applications.VGG16(include_top = False, weights = "imagenet")
+    # model = applications.VGG16(include_top = False, weights = "imagenet")
+
+    # Inception V3
+    model = applications.inception_v3.InceptionV3(include_top = False, weights = "imagenet")
 
     datagen = ImageDataGenerator(
         rescale = 1./255
@@ -89,27 +92,31 @@ def saveBottleneckTransferValues():
 def trainTopModel():
     train_data = np.load(open("train-transfer-values.npy"))
     train_labels = np.array( [0] *  (nb_train_samples / 2) + [1] * (nb_train_samples / 2))
+    train_data = tf.convert_to_tensor(train_data, dtype=tf.float32)
+
 
     validation_data = np.load(open("validation-tansfer-values.npy"))
     validation_labels = np.array( [0] * (nb_validation_samples / 2) + [1] * (nb_validation_samples / 2))
+    validation_data = tf.convert_to_tensor(validation_data, dtype=tf.float32)
 
     model = Sequential()
     model.add(Flatten(input_shape = train_data.shape[1:]))
-    model.add(Dense(512, activation = "relu"))
-    model.add(Dropout(0.7))
-    model.add(Dense(256, activation = "relu"))
-    model.add(Dropout(0.7))
+    # model.add(Dense(512, activation = "relu"))
+    # model.add(Dropout(0.7))
+    model.add(Dense(1024, activation = "relu"))
+    # model.add(Dropout(0.5))
     model.add(Dense(1, activation = "sigmoid"))
 
-    # model.compile(optimizer = "rmsprop", 
-    #     loss = "binary_crossentropy", 
-    #     metrics = ["accuracy"]
-    # )
 
-    model.compile(loss='binary_crossentropy',
-        optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
-        metrics=['accuracy']
+    model.compile(optimizer = "rmsprop", 
+        loss = "binary_crossentropy", 
+        metrics = ["accuracy"]
     )
+
+    # model.compile(loss='binary_crossentropy',
+    #     optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
+    #     metrics=['accuracy']
+    # )
 
     history = model.fit(train_data, train_labels, 
         epochs = epochs, 
