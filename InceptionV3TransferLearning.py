@@ -63,7 +63,7 @@ def saveBottleneckTransferValues():
 
     print("Train Transfer Values Shape : {0} ".format(train_transfer_values.shape))
 
-    np.save(open("train-transfer-values.npy", "w"), train_transfer_values)
+    np.save(open("train-transfer-values-incepV3.npy", "w"), train_transfer_values)
 
 
     # Validation
@@ -86,37 +86,44 @@ def saveBottleneckTransferValues():
 
     print("Validation Transfer Value Shape : {0}".format(validation_transfer_values.shape))
 
-    np.save(open("validation-tansfer-values.npy", "w"), validation_transfer_values)
+    np.save(open("validation-tansfer-values-incepV3.npy", "w"), validation_transfer_values)
 
 
 def trainTopModel():
-    train_data = np.load(open("train-transfer-values.npy"))
+    train_data = np.load(open("train-transfer-values-incepV3.npy"))
     train_labels = np.array( [0] *  (nb_train_samples / 2) + [1] * (nb_train_samples / 2))
-    train_data = tf.convert_to_tensor(train_data, dtype=tf.float32)
 
-
-    validation_data = np.load(open("validation-tansfer-values.npy"))
+    validation_data = np.load(open("validation-tansfer-values-incepV3.npy"))
     validation_labels = np.array( [0] * (nb_validation_samples / 2) + [1] * (nb_validation_samples / 2))
-    validation_data = tf.convert_to_tensor(validation_data, dtype=tf.float32)
 
     model = Sequential()
     model.add(Flatten(input_shape = train_data.shape[1:]))
     # model.add(Dense(512, activation = "relu"))
     # model.add(Dropout(0.7))
-    model.add(Dense(1024, activation = "relu"))
-    # model.add(Dropout(0.5))
+    model.add(Dense(256, activation = "relu"))
+    model.add(Dropout(0.7))
     model.add(Dense(1, activation = "sigmoid"))
 
 
-    model.compile(optimizer = "rmsprop", 
-        loss = "binary_crossentropy", 
-        metrics = ["accuracy"]
+    # model.compile(optimizer = "rmsprop", 
+    #     loss = "binary_crossentropy", 
+    #     metrics = ["accuracy"]
+    # )
+
+    model.compile(loss='binary_crossentropy',
+        optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
+        metrics=['accuracy']
     )
 
-    # model.compile(loss='binary_crossentropy',
-    #     optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
+    # model.compile(optimizer='nadam',
+    #     loss='binary_crossentropy',
     #     metrics=['accuracy']
     # )
+
+    # model.compile(optimizer = "adam", 
+    #     loss = "binary_crossentropy", 
+    #     metrics = ["accuracy"]
+    # )    
 
     history = model.fit(train_data, train_labels, 
         epochs = epochs, 
