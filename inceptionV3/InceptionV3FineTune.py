@@ -26,29 +26,24 @@ epochs = 100
 batch_size = 16
 
 # VGG16 Model
-base_model = applications.VGG16(include_top = False, weights = "imagenet", input_shape = (224,224,3))
+base_model = applications.inception_v3.InceptionV3(include_top = False, weights = "imagenet", input_shape = (224,224,3))
 
 # Top Model
-top_model = Sequential()
-top_model.add(Flatten(input_shape=base_model.output_shape[1:]))
-top_model.add(Dense(512, activation = "relu"))
-top_model.add(Dropout(0.7))
-top_model.add(Dense(256, activation = "relu"))
-top_model.add(Dropout(0.7))
-top_model.add(Dense(1, activation = "sigmoid"))
+# top_model = Sequential()
+# top_model.add(Flatten(input_shape=base_model.output_shape[1:]))
+# top_model.add(Dense(256, activation = "relu"))
+# top_model.add(Dropout(0.7))
+# top_model.add(Dense(1, activation = "sigmoid"))
 
 # Add Weights
-top_model.load_weights(top_model_weights_path)
+# top_model.load_weights(top_model_weights_path)
 
-model = Sequential()
+# model = Sequential()
+# for layer in base_model.layers:
+#     model.add(layer)
+
+# model.add(top_model)
+
+# Set The First 25 Layers To Non Trainlable (Up To Last Conv Block)
 for layer in base_model.layers:
-    model.add(layer)
-
-model.add(top_model)
-
-
-# train_top_model = Sequential()
-# for layer in model.layers[16:17]:
-    # train_top_model.add(layer)
-    # print(layer)
-
+    print(layer)
