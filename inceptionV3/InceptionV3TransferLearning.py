@@ -127,11 +127,8 @@ def trainTopModel():
     validation_labels = np.array( [0] * (nb_validation_samples / 2) + [1] * (nb_validation_samples / 2))
 
     model = Sequential()
-    # model.add(Flatten(input_shape = train_data.shape[1:]))
-    # model.add(Dense(512, activation = "relu"))
-    # model.add(Dropout(0.7))
     model.add(Dense(1024, input_shape = train_data.shape[1:], activation = "relu"))
-    # model.add(Dropout(0.7))
+    # model.add(Dense(1024, activation = "relu"))
     model.add(Dense(1, activation = "sigmoid"))
 
 
