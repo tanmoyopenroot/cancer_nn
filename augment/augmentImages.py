@@ -3,19 +3,19 @@ import glob
 import numpy as np
 
 
-train_data_melanoma_dir = "/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/train/melanoma/"
-train_aug_melanoma_dir = "/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/aug/train/melanoma/"
+train_data_melanoma_dir = "../data/train/melanoma/"
+train_aug_melanoma_dir = "../data/aug/train/melanoma/"
 train_melanoma_file = "train-melanoma.npy"
-train_data_benign_dir = "/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/train/benign/"
-train_aug_benign_dir = "/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/aug/train/benign/"
+train_data_benign_dir = "../data/train/benign/"
+train_aug_benign_dir = "../data/aug/train/benign/"
 train_benign_file = "train-benign.npy"
 
 
-validation_data_melanoma_dir = "/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/validation/melanoma/"
-validation_aug_melanoma_dir = "/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/aug/validation/melanoma/"
+validation_data_melanoma_dir = "../data/validation/melanoma/"
+validation_aug_melanoma_dir = "../data/aug/validation/melanoma/"
 validation_melanoma_file = "validation-melanoma.npy"
-validation_data_benign_dir = "/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/validation/benign/"
-validation_aug_benign_dir = "/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/aug/validation/benign/"
+validation_data_benign_dir = "../data/validation/benign/"
+validation_aug_benign_dir = "../data/aug/validation/benign/"
 validation_benign_file = "validation-benign.npy"
 
 augment_values = {

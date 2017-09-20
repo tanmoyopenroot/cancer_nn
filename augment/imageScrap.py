@@ -19,7 +19,7 @@ def scrap(base_url, image_dest, image_extension, image_range):
 
 def main():
     base_url = "http://www.dermnet.com/dn2/allJPG3/malignant-melanoma-"
-    image_dest = "/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/scrap/"
+    image_dest = "../data/scrap/"
     image_extension = ".jpg"
     scrap(base_url, image_dest, image_extension, 191)
 
