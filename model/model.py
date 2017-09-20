@@ -5,9 +5,10 @@ from keras.preprocessing.image import ImageDataGenerator
 
 img_width, img_height = 224, 224
 
-top_model_weights_path = "isic-vgg16-transfer-learning.h5"
-train_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/train'
-validation_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/validation'
+model_weights_path = "isic-model-weights.h5"
+train_data_dir = '../data/train'
+validation_data_dir = '../data/validation'
+
 nb_train_samples = 576
 nb_validation_samples = 144
 
@@ -105,4 +106,4 @@ plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
 plt.show()
 
-model.save_weights('isic-keras.h5')
+model.save_weights(model_weights_path)

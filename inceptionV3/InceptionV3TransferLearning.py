@@ -13,11 +13,11 @@ img_width, img_height = 299, 299
 
 top_model_weights_path = "isic-inceptionV3-transfer-learning.h5"
 
-train_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/train'
-validation_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/validation'
+train_data_dir = '../data/train'
+validation_data_dir = '../data/validation'
 
-train_aug_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/aug/train'
-validation_aug_data_dir = "/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/aug/validation"
+train_aug_data_dir = '../data/aug/train'
+validation_aug_data_dir = "../data/aug/validation"
 
 nb_train_samples = 9216
 nb_validation_samples = 2304
@@ -136,23 +136,23 @@ def trainTopModel():
     #     metrics = ["accuracy"]
     # )
 
-    # model.compile(loss='binary_crossentropy',
-    #     optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
-    #     metrics=['accuracy']
-    # )
+    model.compile(loss='binary_crossentropy',
+        optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
+        metrics=['accuracy']
+    )
 
     # model.compile(optimizer='nadam',
     #     loss='binary_crossentropy',
     #     metrics=['accuracy']
     # )
 
-    model.compile(optimizer = "adam", 
-        loss = "binary_crossentropy", 
-        metrics = ["accuracy"]
-    )    
+    # model.compile(optimizer = "adam", 
+    #     loss = "binary_crossentropy", 
+    #     metrics = ["accuracy"]
+    # )    
 
     view_transfer_value = TensorBoard(
-        log_dir='./tensorboard/inception_transfer_values', 
+        log_dir='../tensorboard/inception_transfer_values', 
         histogram_freq=0, 
         batch_size=batch_size, 
         write_graph=True, 

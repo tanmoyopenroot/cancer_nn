@@ -13,11 +13,11 @@ img_width, img_height = 224, 224
 
 top_model_weights_path = "isic-vgg16-transfer-learning.h5"
 
-train_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/train'
-validation_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/validation'
+train_data_dir = '../data/train'
+validation_data_dir = '../data/validation'
 
-train_aug_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/aug/train'
-validation_aug_data_dir = "/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/aug/validation"
+train_aug_data_dir = '../data/aug/train'
+validation_aug_data_dir = "../data/aug/validation"
 
 nb_train_samples = 9216
 nb_validation_samples = 2304
@@ -137,8 +137,8 @@ def trainTopModel():
         metrics=['accuracy']
     )
 
-    view_transfer_value = TensorBoard(
-        log_dir='./tensorboard/vgg16_transfer_values', 
+   view_transfer_value = TensorBoard(
+        log_dir='../tensorboard/vgg16_transfer_values', 
         histogram_freq=0, 
         batch_size=batch_size, 
         write_graph=True, 
@@ -149,11 +149,21 @@ def trainTopModel():
         embeddings_metadata=None
     )
 
+    checkpoint = ModelCheckpoint(
+        "isic-vgg16-transfer-value-best-weight.h5",
+        monitor = "val_acc",
+        verbose = 1,
+        save_best_only = True,
+        mode = True
+    )
+
+    callbacks_list = [view_transfer_value, checkpoint]
+
     history = model.fit(train_data, train_labels, 
         epochs = epochs, 
         batch_size = batch_size, 
         validation_data = (validation_data, validation_labels),
-        callbacks = [view_transfer_value]
+        callbacks = callbacks_list
     )
 
     model.save_weights(top_model_weights_path)
