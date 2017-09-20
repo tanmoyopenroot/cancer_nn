@@ -22,7 +22,7 @@ validation_aug_data_dir = "../data/aug/validation"
 nb_train_samples = 9216
 nb_validation_samples = 2304
 
-epochs = 10
+epochs = 50
 
 batch_size = 32
 
@@ -56,7 +56,11 @@ def saveBottleneckTransferValues():
     # model = applications.VGG16(include_top = False, weights = "imagenet")
 
     # Inception V3
-    model = applications.inception_v3.InceptionV3(include_top = False, weights = "imagenet")
+    model = applications.inception_v3.InceptionV3(
+        include_top = False, 
+        weights = "imagenet",
+        pooling = "avg"
+    )
 
     datagen = ImageDataGenerator(
         rescale = 1./255
@@ -123,17 +127,17 @@ def trainTopModel():
     validation_labels = np.array( [0] * (nb_validation_samples / 2) + [1] * (nb_validation_samples / 2))
 
     model = Sequential()
-    model.add(Flatten(input_shape = train_data.shape[1:]))
+    # model.add(Flatten(input_shape = train_data.shape[1:]))
     # model.add(Dense(512, activation = "relu"))
     # model.add(Dropout(0.7))
-    model.add(Dense(256, activation = "relu"))
-    model.add(Dropout(0.7))
+    model.add(Dense(1024, input_shape = train_data.shape[1:], activation = "relu"))
+    # model.add(Dropout(0.7))
     model.add(Dense(1, activation = "sigmoid"))
 
 
     # model.compile(optimizer = "rmsprop", 
-    #     loss = "binary_crossentropy", 
-    #     metrics = ["accuracy"]
+        # loss = "binary_crossentropy", 
+        # metrics = ["accuracy"]
     # )
 
     model.compile(loss='binary_crossentropy',
@@ -145,11 +149,6 @@ def trainTopModel():
     #     loss='binary_crossentropy',
     #     metrics=['accuracy']
     # )
-
-    # model.compile(optimizer = "adam", 
-    #     loss = "binary_crossentropy", 
-    #     metrics = ["accuracy"]
-    # )    
 
     view_transfer_value = TensorBoard(
         log_dir='../tensorboard/inception_transfer_values', 
@@ -176,8 +175,8 @@ def trainTopModel():
     history = model.fit(train_data, train_labels, 
         epochs = epochs, 
         batch_size = batch_size, 
-        validation_data = (validation_data, validation_labels),
-        callbacks = callbacks_list
+        validation_data = (validation_data, validation_labels)
+        # callbacks = callbacks_list
     )
 
     model.save_weights(top_model_weights_path)

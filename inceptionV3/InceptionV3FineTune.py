@@ -47,3 +47,5 @@ base_model = applications.inception_v3.InceptionV3(include_top = False, weights 
 # Set The First 25 Layers To Non Trainlable (Up To Last Conv Block)
 for layer in base_model.layers:
     print(layer)
+
+print(len(base_model.layers))
