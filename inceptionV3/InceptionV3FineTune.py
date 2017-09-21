@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from keras.models import Sequential
+from keras.models import Sequential, Model
 from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras.preprocessing.image import ImageDataGenerator
 from keras.layers import Dropout, Flatten, Dense, GlobalAveragePooling2D
