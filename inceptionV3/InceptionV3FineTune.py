@@ -87,7 +87,8 @@ def nonTrainableLayer():
 
     train_fine_tune = non_trainable_layer_model.predict_generator(
         train_generator,
-        nb_train_samples // batch_size
+        nb_train_samples // batch_size,
+        verbose = 1
     )
 
     print("Train Fine Tune Shape : {0} ".format(train_fine_tune.shape))
@@ -110,7 +111,8 @@ def nonTrainableLayer():
 
     validation_fine_tune = non_trainable_layer_model.predict_generator(
         validation_generator,
-        nb_validation_samples // batch_size 
+        nb_validation_samples // batch_size,
+        verbose = 1
     )
 
     print("Validation Fine Tune Shape : {0}".format(validation_fine_tune.shape))
@@ -153,8 +155,8 @@ def trainLayers():
         print layer.name
 
 def main():
-    # nonTrainableLayer()
-    trainLayers()
+    nonTrainableLayer()
+    # trainLayers()
 
 if __name__ == '__main__':
     main()
