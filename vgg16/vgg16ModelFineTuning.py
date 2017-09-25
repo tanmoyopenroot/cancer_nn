@@ -1,13 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+from keras.models import Model
 from keras import optimizers
 from keras import applications
 from keras import regularizers
 from keras.models import Sequential
 from keras.layers import Input, Dropout, Flatten, Dense
 from keras.preprocessing.image import ImageDataGenerator 
-
 img_width, img_height = 224, 224
 
 top_model_weights_path = "isic-vgg16-transfer-learning-07-l2-300e.h5"
@@ -15,8 +15,8 @@ top_model_weights_path = "isic-vgg16-transfer-learning-07-l2-300e.h5"
 train_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/train'
 validation_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/validation'
 
-train_aug_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/aug/train'
-validation_aug_data_dir = "/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/aug/validation"
+train_aug_data_dir = '../../aug/train'
+validation_aug_data_dir = '../../aug/validation'
 
 nb_train_samples = 9216
 nb_validation_samples = 2304
@@ -24,6 +24,78 @@ nb_validation_samples = 2304
 epochs = 100
 
 batch_size = 16
+
+def getDataGenObject ( directory ):
+
+    datagen = ImageDataGenerator(
+        rescale = 1./255,
+        # rotation_range = 40,
+        # width_shift_range = 0.1,
+        # height_shift_range = 0.1,
+        # shear_range = 0.1,
+        # zoom_range = 0.1,
+        # horizontal_flip = True,
+        # fill_mode = "nearest"
+    )
+
+    datagen_generator = datagen.flow_from_directory(
+        directory,
+        target_size = (img_height, img_width),
+        batch_size = batch_size,
+        class_mode = None,
+        shuffle = False
+    )
+
+    return datagen_generator
+
+def getTrainDataGenObject( path = train_aug_data_dir ):
+
+    return getDataGenObject( path )
+
+def getValidationDataGenObject( path = validation_aug_data_dir ):
+
+    return getDataGenObject( path )
+
+
+
+
+def saveIntermediateTransferValues( layer_name = "block4_pool" ):
+
+    model = applications.VGG16( include_top = False, weights = "imagenet")
+
+    intermediate_model = Model( 
+        inputs = model.input,
+        outputs = model.get_layer(layer_name).output
+    )
+
+    train_transfer_values = intermediate_model.predict_generator(
+
+        getTrainDataGenObject(),
+        nb_train_samples // batch_size,
+        verbose = 1
+
+    )
+
+    print ( "Train transfer Values shape {0}".format(train_transfer_values.shape) )
+    np.save( open("train_transfer_intermediate_values.npy", "w"), train_transfer_values )
+
+    validation_transfer_values = intermediate_model.predict_generator(
+
+        getValidationDataGenObject(),
+        nb_validation_samples // batch_size,
+        verbose = 1
+    )
+
+    print ( "Validation transfer Values shape {0}".format(validation_transfer_values.shape) )
+    np.save( open("validation_transfer_intermediate_values.npy", "w"), validation_transfer_values )
+
+
+saveIntermediateTransferValues();
+
+
+
+
+'''
 
 # VGG16 Model
 base_model = applications.VGG16(include_top = False, weights = "imagenet", input_shape = (224,224,3))
@@ -120,3 +192,4 @@ plt.legend(['train', 'test'], loc='upper left')
 plt.show()
 
 model.save_weights('vgg26ModelFineTuning.h5')
+'''
