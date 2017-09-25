@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from keras.models import Sequential, Model
 from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras.preprocessing.image import ImageDataGenerator
-from keras.layers import Dropout, Flatten, Dense, GlobalAveragePooling2D
+from keras.layers import Input, Dropout, Flatten, Dense, GlobalAveragePooling2D
 from keras import applications
 from keras import regularizers
 from keras import optimizers
@@ -119,77 +119,42 @@ def nonTrainableLayer():
 
 
 def trainLayers():
+    train_data = np.load(open("train-fine-tune-incepV3.npy"))
+    train_labels = np.array( [0] *  (nb_train_samples / 2) + [1] * (nb_train_samples / 2))
+
+    validation_data = np.load(open("validation-fine-tune-incepV3.npy"))
+    validation_labels = np.array( [0] * (nb_validation_samples / 2) + [1] * (nb_validation_samples / 2))
     
+
     # Inception Model
     base_model = applications.inception_v3.InceptionV3(
         include_top = False, 
         weights = "imagenet"
     )
-    
-    # Trainable Layers
-    from_trainable_layer = "mixed8"
-    to_trainable_layer = ""
-    trainable_layer_model = Model(
-        inputs = base_model.get_layer(from_trainable_layer).input,
-        outputs = base_model.get_layer(to_trainable_layer).output
-    )  
 
-    # Top Model
-    top_model = Sequential()
-    top_model.add(Dense(1024, input_shape = train_data.shape[1:], activation = "relu"))
-    # top_model.add(Dropout(0.7))
-    top_model.add(Dense(1, activation = "sigmoid"))
-
-    # Add Weights
-    top_model.load_weights(top_model_weights_path)
-
-    # model = Sequential()
     # for layer in base_model.layers:
-    #     model.add(layer)
+    #     layer.trainable = False
+    
+    # Print Layers
+    # for index, layer in enumerate(base_model.layers):
+        # print(index, layer.name)
 
-    trainable_layer_model.add(top_model)  
 
-    trainable_layer_model.compile(loss='binary_crossentropy',
-        optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
-        metrics=['accuracy']
-    )
+    # Trainable Layers
+    trainable_model = Sequential()
+    trainable_model.add(Input(shape = train_data.shape[1:]))
+    for layer in base_model.layers[249:]:
+        trainable_model.add(layer)
+        print("Added {0} to Trainable Model".format(layer.name))
 
-    view_transfer_value = TensorBoard(
-        log_dir='../tensorboard/inception_transfer_values', 
-        histogram_freq=0, 
-        batch_size=batch_size, 
-        write_graph=True, 
-        write_grads=False, 
-        write_images=False, 
-        embeddings_freq=0, 
-        embeddings_layer_names=None, 
-        embeddings_metadata=None
-    )
-
-    checkpoint = ModelCheckpoint(
-        "isic-inceptionV3-transfer-value-best-weight.h5",
-        monitor = "val_acc",
-        verbose = 1,
-        save_best_only = True,
-        mode = True
-    )
-
-    callbacks_list = [view_transfer_value, checkpoint]
-
-    history = trainable_layer_model.fit(train_data, train_labels, 
-        epochs = epochs, 
-        batch_size = batch_size, 
-        validation_data = (validation_data, validation_labels)
-        # callbacks = callbacks_list
-    )
-
-    trainable_layer_model.save_weights(model_weights_path)
-
-    # plot Training
-    plotTraining(history)
+    print("Add Trainable Layers")
+    # Print Layers Of Trainble Model
+    for layer in trainable_model.layers:
+        print layer.name
 
 def main():
-    nonTrainableLayer()
+    # nonTrainableLayer()
+    trainLayers()
 
 if __name__ == '__main__':
     main()

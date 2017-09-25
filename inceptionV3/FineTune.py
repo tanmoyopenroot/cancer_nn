@@ -1,16 +1,19 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from keras import optimizers
+from keras.models import Sequential, Model
+from keras.callbacks import TensorBoard, ModelCheckpoint
+from keras.preprocessing.image import ImageDataGenerator
+from keras.layers import Input, Dropout, Flatten, Dense, GlobalAveragePooling2D
 from keras import applications
 from keras import regularizers
-from keras.models import Sequential
-from keras.layers import Input, Dropout, Flatten, Dense
-from keras.preprocessing.image import ImageDataGenerator 
+from keras import optimizers
+from keras import backend as K
 
-img_width, img_height = 224, 224
+img_width, img_height = 299, 299
 
-top_model_weights_path = "isic-vgg16-transfer-learning-07-l2-300e.h5"
+top_model_weights_path = "isic-inceptionV3-transfer-learning-1024.h5"
+model_weights_path = "isic-inceptionV3-fine-tune.h5"
 
 train_data_dir = '../data/train'
 validation_data_dir = '../data/validation'
@@ -21,20 +24,18 @@ validation_aug_data_dir = "../data/aug/validation"
 nb_train_samples = 9216
 nb_validation_samples = 2304
 
-epochs = 100
+epochs = 50
 
-batch_size = 16
+batch_size = 32
+base_model = InceptionV3(weights='imagenet', include_top=False)
 
-# VGG16 Model
-base_model = applications.VGG16(include_top = False, weights = "imagenet", input_shape = (224,224,3))
+for i, layer in enumerate(base_model.layers):
+       print(i, layer.name)
 
 # Top Model
 top_model = Sequential()
-top_model.add(Flatten(input_shape=base_model.output_shape[1:]))
-top_model.add(Dense(512, activation = "relu"))
-top_model.add(Dropout(0.7))
-top_model.add(Dense(256, activation = "relu"))
-top_model.add(Dropout(0.7))
+top_model.add(Dense(1024, input_shape = base_model.output.shape[1:], activation = "relu"))
+# model.add(Dense(1024, activation = "relu"))
 top_model.add(Dense(1, activation = "sigmoid"))
 
 # Add Weights
@@ -46,30 +47,24 @@ for layer in base_model.layers:
 
 model.add(top_model)
 
-# Set The First 25 Layers To Non Trainlable (Up To Last Conv Block)
-for layer in model.layers[:25]:
-    print(layer)
-    layer.tainable = False
-
-model.compile(
-    loss = "binary_crossentropy",
-    optimizer = optimizers.SGD(lr = 1e-4, momentum = 0.9),
-    metrics = ["accuracy"]
+model.compile(loss='binary_crossentropy',
+    optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
+    metrics=['accuracy']
 )
+
+for layer in model.layers[:249]:
+   layer.trainable = False
+for layer in model.layers[249:]:
+   layer.trainable = True
+
 
 # this is the augmentation configuration we will use for training
 train_datagen = ImageDataGenerator(
     rescale = 1./255,
-    # rotation_range = 40,
-    # width_shift_range = 0.1,
-    # height_shift_range = 0.1,
-    # shear_range = 0.2,
-    # zoom_range = 0.2,
-    # horizontal_flip = True,
-    # fill_mode = "nearest"
 )
 
 # this is the augmentation configuration we will use for testing:
+# only rescaling
 test_datagen = ImageDataGenerator(rescale=1./255)
 
 # batches of augmented image data
@@ -118,5 +113,3 @@ plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
 plt.show()
-
-model.save_weights('vgg26ModelFineTuning.h5')
