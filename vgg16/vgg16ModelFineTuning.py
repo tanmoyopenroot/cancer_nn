@@ -20,11 +20,11 @@ img_width, img_height = 224, 224
 
 top_model_weights_path = "isic-vgg16-transfer-learning-07-l2-300e.h5"
 
-train_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/train'
-validation_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/validation'
+train_data_dir = '../data/train'
+validation_data_dir = '../data/validation'
 
-train_aug_data_dir = '../../aug/train'
-validation_aug_data_dir = '../../aug/validation'
+train_aug_data_dir = '../data/aug/train'
+validation_aug_data_dir = "../data/aug/validation"
 
 nb_train_samples = 9216
 nb_validation_samples = 2304
@@ -71,6 +71,9 @@ def saveIntermediateTransferValues( layer_name = "block4_pool" ):
 
     model = applications.VGG16( include_top = False, weights = "imagenet")
 
+    for layer in model.layers:
+        print layer.name
+
     intermediate_model = Model( 
         inputs = model.input,
         outputs = model.get_layer(layer_name).output
@@ -96,8 +99,6 @@ def saveIntermediateTransferValues( layer_name = "block4_pool" ):
 
     print ( "Validation transfer Values shape {0}".format(validation_transfer_values.shape) )
     np.save( open("validation_transfer_intermediate_values.npy", "w"), validation_transfer_values )
-
-
 
 def toTensor( np_array ):
     
@@ -213,104 +214,9 @@ def initModel():
     plotTraining(history)
 
 
-initModel()
-
-
-'''
-
-# VGG16 Model
-base_model = applications.VGG16(include_top = False, weights = "imagenet", input_shape = (224,224,3))
-
-# Top Model
-top_model = Sequential()
-top_model.add(Flatten(input_shape=base_model.output_shape[1:]))
-top_model.add(Dense(512, activation = "relu"))
-top_model.add(Dropout(0.7))
-top_model.add(Dense(256, activation = "relu"))
-top_model.add(Dropout(0.7))
-top_model.add(Dense(1, activation = "sigmoid"))
-
-# Add Weights
-top_model.load_weights(top_model_weights_path)
-
-model = Sequential()
-for layer in base_model.layers:
-    model.add(layer)
-
-model.add(top_model)
-
-# Set The First 25 Layers To Non Trainlable (Up To Last Conv Block)
-for layer in model.layers[:25]:
-    print(layer)
-    layer.tainable = False
-
-model.compile(
-    loss = "binary_crossentropy",
-    optimizer = optimizers.SGD(lr = 1e-4, momentum = 0.9),
-    metrics = ["accuracy"]
-)
-
-# this is the augmentation configuration we will use for training
-train_datagen = ImageDataGenerator(
-    rescale = 1./255,
-    # rotation_range = 40,
-    # width_shift_range = 0.1,
-    # height_shift_range = 0.1,
-    # shear_range = 0.2,
-    # zoom_range = 0.2,
-    # horizontal_flip = True,
-    # fill_mode = "nearest"
-)
-
-# this is the augmentation configuration we will use for testing:
-test_datagen = ImageDataGenerator(rescale=1./255)
-
-# batches of augmented image data
-train_generator = train_datagen.flow_from_directory(
-    train_aug_data_dir,
-    target_size = (img_height, img_width),
-    batch_size=batch_size,
-    class_mode='binary'
-) 
-
-# this is a similar generator, for validation data
-validation_generator = test_datagen.flow_from_directory(
-    validation_aug_data_dir,
-    target_size = (img_height, img_width),
-    batch_size=batch_size,
-    class_mode='binary'
-)
-
-history = model.fit_generator(
-    train_generator,
-    steps_per_epoch = nb_train_samples // batch_size,
-    epochs = epochs,
-    validation_data = validation_generator,
-    validation_steps = nb_validation_samples // batch_size
-)
-
-# list all data in history
-print(history.history.keys())
-
-
-# summarize history for accuracy
-plt.plot(history.history['acc'])
-plt.plot(history.history['val_acc'])
-plt.title('model accuracy')
-plt.ylabel('accuracy')
-plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
-plt.show()
-
-
-# summarize history for loss
-plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
-plt.title('model loss')
-plt.ylabel('loss')
-plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
-plt.show()
-
-model.save_weights('vgg26ModelFineTuning.h5')
-'''
+def main():
+    saveIntermediateTransferValues();    
+    initModel()
+    
+if __name__ == '__main__':
+    main()

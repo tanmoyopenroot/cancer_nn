@@ -22,7 +22,7 @@ validation_aug_data_dir = "../data/aug/validation"
 nb_train_samples = 9216
 nb_validation_samples = 2304
 
-epochs = 50
+epochs = 100
 
 batch_size = 32
 
@@ -128,7 +128,9 @@ def trainTopModel():
 
     model = Sequential()
     model.add(Dense(1024, input_shape = train_data.shape[1:], activation = "relu"))
-    # model.add(Dense(1024, activation = "relu"))
+    model.add(Dropout(0.7))
+    model.add(Dense(256, activation = "relu"))
+    model.add(Dropout(0.7))
     model.add(Dense(1, activation = "sigmoid"))
 
 
