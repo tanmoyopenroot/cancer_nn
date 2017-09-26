@@ -123,8 +123,8 @@ def trainTopModel():
     model.add(Flatten(input_shape = train_data.shape[1:]))
     #model.add(Dense(200, activation = "relu", kernel_initializer='random_uniform', bias_initializer='zeros'))
     #model.add(Dropout(0.5))
-    model.add(Dense(50, activation = "relu"))
-    #model.add(Dropout(0.5))
+    model.add(Dense(100, activation = "relu"))
+    model.add(Dropout(0.3))
     model.add(Dense(1, activation = "sigmoid"))
 
     # model.compile(optimizer = "rmsprop", 

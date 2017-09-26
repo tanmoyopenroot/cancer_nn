@@ -31,7 +31,7 @@ nb_validation_samples = 2304
 
 epochs = 100
 
-batch_size = 256
+batch_size = 16
 
 def getDataGenObject ( directory ):
 
@@ -159,9 +159,9 @@ def fineTuneModelConvBlockFive():
 def pretrainedFCC():
     
     model = Sequential()
-    model.add(Flatten(input_shape = train_data.shape[1:]))
-    model.add(Dense(50, activation = "relu"))
-    #model.add(Dropout(0.5))
+    model.add(Flatten(input_shape = (7, 7, 512) ))
+    model.add(Dense(100, activation = "relu"))
+    model.add(Dropout(0.3))
     model.add(Dense(1, activation = "sigmoid"))
 
     model.load_weights( 'isic-vgg16-transfer-learning.h5' )
@@ -184,20 +184,20 @@ def initModel():
     
     print ("loading FCC")
 
-    top_model = Sequential()
-    #print ( " fcc 1st layer")
-    top_model.add(Flatten(input_shape = (7,7,512) ))
-    #print ("fcc 2nd layer")
-    top_model.add(Dense(50, activation = "relu"))
-    top_model.add(Dense(1, activation = "sigmoid"))
-    top_model.load_weights( 'isic-vgg16-transfer-learning.h5' )
+    # top_model = Sequential()
+    # top_model.add(Flatten(input_shape = (7,7,512) ))
+    # top_model.add(Dense(50, activation = "relu"))
+    # top_model.add(Dense(1, activation = "sigmoid"))
+    # top_model.load_weights( 'isic-vgg16-transfer-learning.h5' )
+    top_model = pretrainedFCC()
 
     print( "combining")
     model = Model( input = model.input, output = top_model( model.output ) )
 
 
     model.compile(loss='binary_crossentropy',
-        optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
+        #optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
+        optimizer = optimizers.RMSprop( lr = 1e-2 ),
         metrics=['accuracy']
     )
 
@@ -205,6 +205,7 @@ def initModel():
         epochs = epochs, 
         batch_size = batch_size, 
         validation_data = (validation_data, validation_labels),
+        shuffle = True
        #callbacks = callbacks_list
     )
     model.save_weights(top_model_weights_path)
@@ -215,102 +216,3 @@ def initModel():
 
 initModel()
 
-
-'''
-
-# VGG16 Model
-base_model = applications.VGG16(include_top = False, weights = "imagenet", input_shape = (224,224,3))
-
-# Top Model
-top_model = Sequential()
-top_model.add(Flatten(input_shape=base_model.output_shape[1:]))
-top_model.add(Dense(512, activation = "relu"))
-top_model.add(Dropout(0.7))
-top_model.add(Dense(256, activation = "relu"))
-top_model.add(Dropout(0.7))
-top_model.add(Dense(1, activation = "sigmoid"))
-
-# Add Weights
-top_model.load_weights(top_model_weights_path)
-
-model = Sequential()
-for layer in base_model.layers:
-    model.add(layer)
-
-model.add(top_model)
-
-# Set The First 25 Layers To Non Trainlable (Up To Last Conv Block)
-for layer in model.layers[:25]:
-    print(layer)
-    layer.tainable = False
-
-model.compile(
-    loss = "binary_crossentropy",
-    optimizer = optimizers.SGD(lr = 1e-4, momentum = 0.9),
-    metrics = ["accuracy"]
-)
-
-# this is the augmentation configuration we will use for training
-train_datagen = ImageDataGenerator(
-    rescale = 1./255,
-    # rotation_range = 40,
-    # width_shift_range = 0.1,
-    # height_shift_range = 0.1,
-    # shear_range = 0.2,
-    # zoom_range = 0.2,
-    # horizontal_flip = True,
-    # fill_mode = "nearest"
-)
-
-# this is the augmentation configuration we will use for testing:
-test_datagen = ImageDataGenerator(rescale=1./255)
-
-# batches of augmented image data
-train_generator = train_datagen.flow_from_directory(
-    train_aug_data_dir,
-    target_size = (img_height, img_width),
-    batch_size=batch_size,
-    class_mode='binary'
-) 
-
-# this is a similar generator, for validation data
-validation_generator = test_datagen.flow_from_directory(
-    validation_aug_data_dir,
-    target_size = (img_height, img_width),
-    batch_size=batch_size,
-    class_mode='binary'
-)
-
-history = model.fit_generator(
-    train_generator,
-    steps_per_epoch = nb_train_samples // batch_size,
-    epochs = epochs,
-    validation_data = validation_generator,
-    validation_steps = nb_validation_samples // batch_size
-)
-
-# list all data in history
-print(history.history.keys())
-
-
-# summarize history for accuracy
-plt.plot(history.history['acc'])
-plt.plot(history.history['val_acc'])
-plt.title('model accuracy')
-plt.ylabel('accuracy')
-plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
-plt.show()
-
-
-# summarize history for loss
-plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
-plt.title('model loss')
-plt.ylabel('loss')
-plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
-plt.show()
-
-model.save_weights('vgg26ModelFineTuning.h5')
-'''
