@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from keras.models import Sequential
-from keras.callbacks import TensorBoard
+#from keras.callbacks import TensorBoard
 from keras.preprocessing.image import ImageDataGenerator
 from keras.layers import Dropout, Flatten, Dense, GlobalAveragePooling2D
 from keras import applications
@@ -22,9 +22,9 @@ validation_aug_data_dir = "../data/aug/validation"
 nb_train_samples = 9216
 nb_validation_samples = 2304
 
-epochs = 300
+epochs = 30
 
-batch_size = 16
+batch_size = 64
 
 def plotTraining(history):
     # list all data in history
@@ -113,18 +113,18 @@ def saveBottleneckTransferValues():
 
 
 def trainTopModel():
-    train_data = np.load(open("train-transfer-values.npy"))
+    train_data = np.load(open("train-transfer-values-vgg16.npy"))
     train_labels = np.array( [0] *  (nb_train_samples / 2) + [1] * (nb_train_samples / 2))
 
-    validation_data = np.load(open("validation-tansfer-values.npy"))
+    validation_data = np.load(open("validation-transfer-values-vgg16.npy"))
     validation_labels = np.array( [0] * (nb_validation_samples / 2) + [1] * (nb_validation_samples / 2))
 
     model = Sequential()
     model.add(Flatten(input_shape = train_data.shape[1:]))
-    model.add(Dense(512, activation = "relu"))
-    model.add(Dropout(0.7))
-    model.add(Dense(256, activation = "relu"))
-    model.add(Dropout(0.7))
+    #model.add(Dense(200, activation = "relu", kernel_initializer='random_uniform', bias_initializer='zeros'))
+    #model.add(Dropout(0.5))
+    model.add(Dense(50, activation = "relu"))
+    #model.add(Dropout(0.5))
     model.add(Dense(1, activation = "sigmoid"))
 
     # model.compile(optimizer = "rmsprop", 
@@ -137,7 +137,8 @@ def trainTopModel():
         metrics=['accuracy']
     )
 
-   view_transfer_value = TensorBoard(
+    '''
+    view_transfer_value = TensorBoard(
         log_dir='../tensorboard/vgg16_transfer_values', 
         histogram_freq=0, 
         batch_size=batch_size, 
@@ -158,12 +159,13 @@ def trainTopModel():
     )
 
     callbacks_list = [view_transfer_value, checkpoint]
+    '''
 
     history = model.fit(train_data, train_labels, 
         epochs = epochs, 
         batch_size = batch_size, 
         validation_data = (validation_data, validation_labels),
-        callbacks = callbacks_list
+       #callbacks = callbacks_list
     )
 
     model.save_weights(top_model_weights_path)
