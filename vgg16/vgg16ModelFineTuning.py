@@ -33,7 +33,7 @@ epochs = 100
 
 batch_size = 16
 
-def getDataGenObject ( directory ):
+def getDataGenObject ( directory, class_mode ):
 
     datagen = ImageDataGenerator(
         rescale = 1./255,
@@ -50,19 +50,19 @@ def getDataGenObject ( directory ):
         directory,
         target_size = (img_height, img_width),
         batch_size = batch_size,
-        class_mode = None,
+        class_mode = class_mode,
         shuffle = False
     )
 
     return datagen_generator
 
-def getTrainDataGenObject( path = train_aug_data_dir ):
+def getTrainDataGenObject( path = train_aug_data_dir, class_mode = None ):
 
-    return getDataGenObject( path )
+    return getDataGenObject( path, class_mode )
 
-def getValidationDataGenObject( path = validation_aug_data_dir ):
+def getValidationDataGenObject( path = validation_aug_data_dir, class_mode = None ):
 
-    return getDataGenObject( path )
+    return getDataGenObject( path, class_mode )
 
 
 
@@ -156,7 +156,7 @@ def fineTuneModelConvBlockFive():
 
     return model
 
-def pretrainedFCC():
+def FCC( pretrained_weights = True ):
     
     model = Sequential()
     model.add(Flatten(input_shape = (7, 7, 512) ))
@@ -164,55 +164,85 @@ def pretrainedFCC():
     model.add(Dropout(0.3))
     model.add(Dense(1, activation = "sigmoid"))
 
-    model.load_weights( 'isic-vgg16-transfer-learning.h5' )
+    if pretrained_weights:
+        model.load_weights( 'isic-vgg16-transfer-learning.h5' )
 
     return model
 
 
-def initModel():
+def vgg16FromScratch():
 
-    #load data
-    print ( "loading data" )
-    train_data = np.load( 'train_transfer_intermediate_values.npy' )
-    train_labels = np.array( [0] *  (nb_train_samples / 2) + [1] * (nb_train_samples / 2))
-    validation_data = np.load(open("validation_transfer_intermediate_values.npy"))
-    validation_labels = np.array( [0] * (nb_validation_samples / 2) + [1] * (nb_validation_samples / 2))
+    model = applications.VGG16(include_top = False, weights = None, input_shape = (224, 224, 3))
+
+    return model
+
+
+def initModel( fine_tune = True ):
+
+
+    weights_path = 'fine-tune-vgg16.h5'
 
     #load model
-    print ("loading conv block 5")
-    model = fineTuneModelConvBlockFive()
-    
-    print ("loading FCC")
+    if fine_tune :
+        #load data
+        print ( "loading intermediate transfer values" )
+        train_data = np.load( 'train_transfer_intermediate_values.npy' )
+        train_labels = np.array( [0] *  (nb_train_samples / 2) + [1] * (nb_train_samples / 2))
+        validation_data = np.load(open("validation_transfer_intermediate_values.npy"))
+        validation_labels = np.array( [0] * (nb_validation_samples / 2) + [1] * (nb_validation_samples / 2))
 
-    # top_model = Sequential()
-    # top_model.add(Flatten(input_shape = (7,7,512) ))
-    # top_model.add(Dense(50, activation = "relu"))
-    # top_model.add(Dense(1, activation = "sigmoid"))
-    # top_model.load_weights( 'isic-vgg16-transfer-learning.h5' )
-    top_model = pretrainedFCC()
+        print ("loading conv block 5")
+        model = fineTuneModelConvBlockFive()
+        
+
+    else:
+        weights_path = 'scratch-vgg16.h5'
+        model = vgg16FromScratch()
+
+
+
+    print ("loading FCC")
+    top_model = FCC( pretrained_weights = fine_tune )
 
     print( "combining")
     model = Model( input = model.input, output = top_model( model.output ) )
 
 
+
     model.compile(loss='binary_crossentropy',
         #optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
-        optimizer = optimizers.RMSprop( lr = 1e-2 ),
+        #optimizer = optimizers.RMSprop( lr = 1e-2 ),
+        optimizer = optimizers.Adam( lr = 1e-2 ),
         metrics=['accuracy']
     )
 
-    history = model.fit(train_data, train_labels, 
-        epochs = epochs, 
-        batch_size = batch_size, 
-        validation_data = (validation_data, validation_labels),
-        shuffle = True
-       #callbacks = callbacks_list
-    )
-    model.save_weights(top_model_weights_path)
+    if fine_tune:
+        history = model.fit(train_data, train_labels, 
+            epochs = epochs, 
+            batch_size = batch_size, 
+            validation_data = (validation_data, validation_labels),
+            shuffle = True
+           #callbacks = callbacks_list
+        )
+    else:
+        history = model.fit_generator(
+            getTrainDataGenObject( class_mode = 'binary' ),
+            epochs = epochs,
+            steps_per_epoch = batch_size,
+            validation_data = getValidationDataGenObject( class_mode = 'binary' ),
+            validation_steps = nb_validation_samples // batch_size,
+        )
+
+
+
+
+    model.save_weights(weights_path)
 
     # plot Training
     plotTraining(history)
+    
+
+initModel( fine_tune = False )
 
 
-initModel()
 
