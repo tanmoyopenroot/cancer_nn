@@ -20,11 +20,11 @@ img_width, img_height = 224, 224
 
 top_model_weights_path = "isic-vgg16-transfer-learning-07-l2-300e.h5"
 
-train_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/train'
-validation_data_dir = '/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/validation'
+train_data_dir = '../data/train'
+validation_data_dir = '../data/validation'
 
-train_aug_data_dir = '../../aug/train'
-validation_aug_data_dir = '../../aug/validation'
+train_aug_data_dir = '../data/aug/train'
+validation_aug_data_dir = "../data/aug/validation"
 
 nb_train_samples = 9216
 nb_validation_samples = 2304
@@ -71,6 +71,9 @@ def saveIntermediateTransferValues( layer_name = "block4_pool" ):
 
     model = applications.VGG16( include_top = False, weights = "imagenet")
 
+    for layer in model.layers:
+        print layer.name
+
     intermediate_model = Model( 
         inputs = model.input,
         outputs = model.get_layer(layer_name).output
@@ -96,8 +99,6 @@ def saveIntermediateTransferValues( layer_name = "block4_pool" ):
 
     print ( "Validation transfer Values shape {0}".format(validation_transfer_values.shape) )
     np.save( open("validation_transfer_intermediate_values.npy", "w"), validation_transfer_values )
-
-
 
 def toTensor( np_array ):
     
@@ -242,7 +243,9 @@ def initModel( fine_tune = True ):
     plotTraining(history)
     
 
-initModel( fine_tune = False )
-
-
-
+def main():
+    saveIntermediateTransferValues();    
+    initModel( fine_tune = False )
+    
+if __name__ == '__main__':
+    main()
