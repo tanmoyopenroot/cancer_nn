@@ -29,7 +29,7 @@ validation_aug_data_dir = '../../aug/validation'
 nb_train_samples = 9216
 nb_validation_samples = 2304
 
-epochs = 100
+epochs = 10
 
 batch_size = 16
 
@@ -135,7 +135,7 @@ def plotTraining(history):
     plt.show()
 
 
-def fineTuneModelConvBlockFive():
+def VGG16ConvBlockFive( pretrained_weights ):
 
     input_img = Input( shape = ( 14, 14, 512 ) )
 
@@ -145,18 +145,20 @@ def fineTuneModelConvBlockFive():
     x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
     WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
 
-    weights_path = get_file(
-        'vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5',
-        WEIGHTS_PATH_NO_TOP,
-        cache_subdir='models'
-    )
-
     model = Model( input_img, x )
-    model.load_weights( weights_path, by_name = True )
+
+    if pretrained_weights :
+        print "pretrained conv_block_5 weights loading"
+        weights_path = get_file(
+            'vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5',
+            WEIGHTS_PATH_NO_TOP,
+            cache_subdir='models'
+        )
+        model.load_weights( weights_path, by_name = True )
 
     return model
 
-def FCC( pretrained_weights = True ):
+def FCC( pretrained_weights ):
     
     model = Sequential()
     model.add(Flatten(input_shape = (7, 7, 512) ))
@@ -165,6 +167,7 @@ def FCC( pretrained_weights = True ):
     model.add(Dense(1, activation = "sigmoid"))
 
     if pretrained_weights:
+        print "pretrained FCC weights loading"
         model.load_weights( 'isic-vgg16-transfer-learning.h5' )
 
     return model
@@ -192,7 +195,7 @@ def initModel( fine_tune = True ):
         validation_labels = np.array( [0] * (nb_validation_samples / 2) + [1] * (nb_validation_samples / 2))
 
         print ("loading conv block 5")
-        model = fineTuneModelConvBlockFive()
+        model = VGG16ConvBlockFive( False )
         
 
     else:
@@ -202,7 +205,7 @@ def initModel( fine_tune = True ):
 
 
     print ("loading FCC")
-    top_model = FCC( pretrained_weights = fine_tune )
+    top_model = FCC( True )
 
     print( "combining")
     model = Model( input = model.input, output = top_model( model.output ) )
@@ -210,9 +213,9 @@ def initModel( fine_tune = True ):
 
 
     model.compile(loss='binary_crossentropy',
-        #optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
+        optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
         #optimizer = optimizers.RMSprop( lr = 1e-2 ),
-        optimizer = optimizers.Adam( lr = 1e-2 ),
+        #optimizer = optimizers.Adam( lr = 1e-2 ),
         metrics=['accuracy']
     )
 
@@ -228,7 +231,7 @@ def initModel( fine_tune = True ):
         history = model.fit_generator(
             getTrainDataGenObject( class_mode = 'binary' ),
             epochs = epochs,
-            steps_per_epoch = batch_size,
+            steps_per_epoch = nb_train_samples // batch_size,
             validation_data = getValidationDataGenObject( class_mode = 'binary' ),
             validation_steps = nb_validation_samples // batch_size,
         )
@@ -242,7 +245,7 @@ def initModel( fine_tune = True ):
     plotTraining(history)
     
 
-initModel( fine_tune = False )
+initModel()
 
 
 
