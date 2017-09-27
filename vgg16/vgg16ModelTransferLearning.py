@@ -138,6 +138,14 @@ def trainTopModel():
         [0] * (nb_validation_samples / 2) + [1] * (nb_validation_samples / 2))
 
     model = Sequential()
+
+    #model.add(Flatten(input_shape = train_data.shape[1:]))
+    #model.add(Dense(200, activation = "relu", kernel_initializer='random_uniform', bias_initializer='zeros'))
+    #model.add(Dropout(0.5))
+    #model.add(Dense(100, activation = "relu"))
+    #model.add(Dropout(0.3))
+    #model.add(Dense(1, activation = "sigmoid"))
+
     model.add(Dense(256, input_shape = train_data.shape[1:], activation="relu"))
     model.add(Dropout(0.5))    
     # model.add(Dense(4096, activation="relu"))
