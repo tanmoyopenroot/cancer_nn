@@ -107,12 +107,6 @@ class FCC:
 		else:
 			print "error in instantiating model"
 
-	
-
-s = FCC( 20, train_data_path = "vgg16-train-conv-block-5-fine-tune-feature-maps.npy",
-	vald_data_path = "vgg16-validation-conv-block-5-fine-tune-feature-maps.npy"
-)
-s.trainFCC()
 
 
 
