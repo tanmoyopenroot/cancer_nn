@@ -56,7 +56,9 @@ def plotTraining(history):
     plt.show()
 
 
+# train_data_path = "train_transfer_block3_pool_values.npy"
+# vald_data_path = "validation_transfer_block3_pool_values.npy"
 
-labels()
-
+# #t,v = data(train_data_path, vald_data_path, 'r')
+# s =  np.load( train_data_path, mmap_mode = 'r' )
 
