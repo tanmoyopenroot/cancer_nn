@@ -51,9 +51,9 @@ def drawLines(img, contours):
             cnt_points.append(pts[0])
 
     cnt_points = np.array(cnt_points)
-    np.random.shuffle(cnt_points)
-    print cnt_points.shape
-    print cnt_points[0:10,:]
+    # np.random.shuffle(cnt_points)
+    # print cnt_points.shape
+    # print cnt_points[0:10,:]
 
     for i in range(len(cnt_points)):
         cv2.line(mask,center,(cnt_points[i,0], cnt_points[i,1]),(255,255,255),5)
