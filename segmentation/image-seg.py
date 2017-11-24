@@ -11,34 +11,71 @@ def autoCannyEdgeDetection(img, sigma = 0.7):
 
 	return edged
 
-def getContourImage(org, img):
-    im2, contours, hierarchy = cv2.findContours(img,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+def drawConvexHull(img, contours):
+    cnt = contours[0]
 
     mask = np.zeros(img.shape, np.uint8)
 
-    # largest_cnt_area = cv2.contourArea(contours[0])
-    # largest_cnt = 0
-    # cnt_area = largest_cnt_area
+    hull = cv2.convexHull(cnt,returnPoints = False)
+    defects = cv2.convexityDefects(cnt,hull)
 
-    # for cnt in contours:
-    #     cnt_area = cv2.contourArea(cnt)
-    #     if cnt_area > largest_cnt_area:
-    #         largest_cnt_area = cnt_area
-    #         largest_cnt = cnt
-        
-    #     print cnt_area
+    for i in range(defects.shape[0]):
+        s,e,f,d = defects[i,0]
+        start = tuple(cnt[s][0])
+        end = tuple(cnt[e][0])
+        far = tuple(cnt[f][0])
+        cv2.line(mask,start,end,[255,255,255],5)
+        cv2.circle(mask,far,5,[255,255,255],-1)
 
-    cv2.drawContours(mask, contours, -1, (255,255,255), 5)
+    (x,y),radius = cv2.minEnclosingCircle(cnt)
+    center = (int(x),int(y))
+    radius = int(radius)
+    cv2.circle(mask,center,radius,(255,255,255),-1)
+
+
+    return mask  
+
+
+def drawLines(img, contours):
+    cnt = contours[0]
+    (x,y),radius = cv2.minEnclosingCircle(cnt)
+    center = (int(x),int(y))
+    # radius = int(radius)
+    # cv2.circle(mask,center,radius,(255,255,255),-1)
+
+    mask = np.zeros(img.shape, np.uint8)
+    cnt_points = []
+
+    for cnt in contours:
+        for pts in cnt:
+            cnt_points.append(pts[0])
+
+    cnt_points = np.array(cnt_points)
+    np.random.shuffle(cnt_points)
+    print cnt_points.shape
+    print cnt_points[0:10,:]
+
+    for i in range(1, len(cnt_points) - 1):
+        cv2.line(mask,center,(cnt_points[i,0], cnt_points[i,1]),(255,255,255),5)
 
     return mask
 
+
+def getContourImage(img):
+    im2, contours, hierarchy = cv2.findContours(img,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+    mask = np.zeros(img.shape, np.uint8)
+    cv2.drawContours(mask, contours, -1, (255,255,255), 5)
+
+    return contours, mask
+
 def getDilationImage(img):
-    kernel = np.ones((5,5),np.uint8)
+    kernel = np.ones((50,50),np.uint8)
     dilation = cv2.dilate(img,kernel,iterations = 1)
     return dilation
 
 def getOpeningImage(img):
-    kernel = np.ones((20,20),np.uint8)
+    kernel = np.ones((35,35),np.uint8)
     opening = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
     return opening
 
@@ -72,35 +109,18 @@ def getBinaryImage(img):
     thresh = cv2.threshold(gray, 145, 255, cv2.THRESH_BINARY)[1]
     return thresh
 
-def main():
-    img = cv2.imread("../data/aug/train/benign/ISIC_0000201.jpg_aug0.jpg")
-    # img = cv2.imread("../data/aug/train/benign/ISIC_0000011.jpg_aug0.jpg")
-    # img = cv2.imread("../data/aug/train/benign/ISIC_0    # cv2.namedWindow('dilation', cv2.WINDOW_NORMAL)
-    # cv2.imshow("dilation", dilation_img)  000113.jpg_aug0.jpg")
-    # img = cv2.imread("../data/aug/train/benign/ISIC_0009344.jpg_aug12.jpg")
-
+def generateMask(img):    
     blured_img = getBlurImage(img)
     hsv, hue, sat, val = getHSVImage(blured_img)
     # binary_img_hsv = binaryIMG(blured_img)
 
-
     cv2.namedWindow('hsv', cv2.WINDOW_NORMAL)
     cv2.imshow("hsv", hsv)
-
-    # cv2.namedWindow('hue', cv2.WINDOW_NORMAL)
-    # cv2.imshow('hue', hsv[:, :, 0])
-
-    # cv2.namedWindow('sat', cv2.WINDOW_NORMAL)
-    # cv2.imshow('sat', hsv[:, :, 1])
-
-    # cv2.namedWindow('val', cv2.WINDOW_NORMAL)
-    # cv2.imshow('val', hsv[:, :, 2])
 
     hsv += 35
 
     cv2.namedWindow('hsv-inc', cv2.WINDOW_NORMAL)
     cv2.imshow("hsv-inc", hsv)
-
 
     gray = getBinaryImage(hsv)
     filtered_img = getFilterImage(gray)
@@ -108,36 +128,41 @@ def main():
     closing_img = getClosingImage(opening_img)
 
     canny_edge_img = autoCannyEdgeDetection(closing_img)
-    contour_img = getContourImage(hsv, canny_edge_img) 
-    dilation_img = getDilationImage(contour_img)
-
-    # hsv[:, :, 0] += 10
-
-    # cv2.namedWindow('hue-inc', cv2.WINDOW_NORMAL)
-    # cv2.imshow("hue-inc", hsv[:, :, 0])
-
+    contours, contour_img = getContourImage(canny_edge_img) 
+    binary_line_img = drawLines(contour_img, contours)
+    # convex_img = drawConvexHull(hsv, contours) 
+    dilation_img = getDilationImage(binary_line_img)
 
     cv2.namedWindow('gray', cv2.WINDOW_NORMAL)
-    cv2.imshow("gray", gray)    
-
-    # cv2.namedWindow('filter', cv2.WINDOW_NORMAL)
-    # cv2.imshow("filter", filtered_img)     
-
-    # cv2.namedWindow('opening', cv2.WINDOW_NORMAL)
-    # cv2.imshow("opening", opening_img)  
-
-    cv2.namedWindow('closing', cv2.WINDOW_NORMAL)
-    cv2.imshow("closing", closing_img)   
-
+    cv2.imshow("gray", gray)       
     cv2.namedWindow('canny-edge', cv2.WINDOW_NORMAL)
     cv2.imshow("canny-edge", canny_edge_img)
-
     cv2.namedWindow('contour', cv2.WINDOW_NORMAL)
-    cv2.imshow("contour", contour_img)  
-
+    cv2.imshow("contour", contour_img)    
     cv2.namedWindow('dilation', cv2.WINDOW_NORMAL)
     cv2.imshow("dilation", dilation_img)    
+    # cv2.namedWindow('convex', cv2.WINDOW_NORMAL)
+    # cv2.imshow("convex", convex_img)  
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
+    return dilation_img
+
+def extractRegion(img, mask):
+    processed_img = cv2.bitwise_and(img,img,mask = mask)
+    return processed_img
+
+
+def main():
+    # img = cv2.imread("../data/aug/train/benign/ISIC_0000201.jpg_aug0.jpg")
+    # img = cv2.imread("../data/aug/train/benign/ISIC_0000011.jpg_aug0.jpg")
+    # img = cv2.imread("../data/aug/train/benign/ISIC_0000113.jpg_aug0.jpg")
+    img = cv2.imread("../data/aug/train/benign/ISIC_0009344.jpg_aug12.jpg")
+
+    mask = generateMask(img)
+    final = extractRegion(img, mask)
+    cv2.namedWindow('final', cv2.WINDOW_NORMAL)
+    cv2.imshow("final", final)  
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
