@@ -55,7 +55,7 @@ def drawLines(img, contours):
     print cnt_points.shape
     print cnt_points[0:10,:]
 
-    for i in range(1, len(cnt_points) - 1):
+    for i in range(len(cnt_points)):
         cv2.line(mask,center,(cnt_points[i,0], cnt_points[i,1]),(255,255,255),5)
 
     return mask
@@ -154,10 +154,10 @@ def extractRegion(img, mask):
 
 
 def main():
-    # img = cv2.imread("../data/aug/train/benign/ISIC_0000201.jpg_aug0.jpg")
+    img = cv2.imread("../data/aug/train/benign/ISIC_0000201.jpg_aug0.jpg")
     # img = cv2.imread("../data/aug/train/benign/ISIC_0000011.jpg_aug0.jpg")
     # img = cv2.imread("../data/aug/train/benign/ISIC_0000113.jpg_aug0.jpg")
-    img = cv2.imread("../data/aug/train/benign/ISIC_0009344.jpg_aug12.jpg")
+    # img = cv2.imread("../data/aug/train/benign/ISIC_0009344.jpg_aug12.jpg")
 
     mask = generateMask(img)
     final = extractRegion(img, mask)
