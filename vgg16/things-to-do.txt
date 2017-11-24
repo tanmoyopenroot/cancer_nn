@@ -1,0 +1,4 @@
+1) train svm on conv_block_5
+2) train svm on conv_block_4
+
+3) compare the results NN trained on  conv_block_3 to the previous results
