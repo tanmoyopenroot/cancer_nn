@@ -4,6 +4,7 @@ from keras import optimizers
 
 import loadData
 
+#contrib check
 class FCC:
 
 
