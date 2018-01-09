@@ -1,33 +1,15 @@
-import cv2
 import glob
+
+import cv2
 import numpy as np
 
+from config import train_seg_melanoma_dir, train_seg_benign_dir
+from config import validation_seg_melanoma_dir, validation_seg_benign_dir
 
-train_data_melanoma_dir = "../data/train/melanoma/"
-train_aug_melanoma_dir = "../data/aug/train/melanoma/"
-train_melanoma_file = "train-melanoma.npy"
-train_data_benign_dir = "../data/train/benign/"
-train_aug_benign_dir = "../data/aug/train/benign/"
-train_benign_file = "train-benign.npy"
+from config import train_aug_melanoma_dir, train_aug_benign_dir
+from config import validation_aug_melanoma_dir, validation_aug_benign_dir
 
-
-validation_data_melanoma_dir = "../data/validation/melanoma/"
-validation_aug_melanoma_dir = "../data/aug/validation/melanoma/"
-validation_melanoma_file = "validation-melanoma.npy"
-validation_data_benign_dir = "../data/validation/benign/"
-validation_aug_benign_dir = "../data/aug/validation/benign/"
-validation_benign_file = "validation-benign.npy"
-
-augment_values = {
-    "rotation_range" : 40,
-    "width_shift_range" : 0.1,
-    "height_shift_range" : 0.1,
-    "shear_range" : 2,
-    "zoom_range" : 0.2,
-    "horizontal_flip" : True,
-    "vertical_flip" : False,
-    "rescale" : 1./255,
-}
+from config import augment_values
 
 def translateXY(image_array, wrg, hrg):
     rows, cols, ch = image_array.shape
@@ -87,7 +69,7 @@ def augment(x, aug_no, img_save_dir, img_name):
         augmented_img = processImage(x, h_flip)
         cv2.imwrite(img_save_dir + img_name + "_aug" + str(i) + ".jpg", augmented_img)
 
-def augmentImages(train_or_valid, image_dir, img_save_dir, save_file):
+def augmentImages(train_or_valid, image_dir, img_save_dir):
     if train_or_valid == "train":
         # Training
         print("Augment Training Data")
@@ -106,11 +88,9 @@ def augmentImages(train_or_valid, image_dir, img_save_dir, save_file):
         print("Augmenting Image : {0} / {1} - {2}".format(index, image_len, img_name))
         augment(x, aug_no, img_save_dir, img_name)
 
-def main():
-    augmentImages("train", train_data_benign_dir, train_aug_benign_dir, train_benign_file)
-    augmentImages("train", train_data_melanoma_dir, train_aug_melanoma_dir, train_melanoma_file)
-    augmentImages("validation", validation_data_benign_dir, validation_aug_benign_dir, validation_benign_file)
-    augmentImages("validation", validation_data_melanoma_dir, validation_aug_melanoma_dir, validation_melanoma_file)
 
-if __name__ == '__main__':
-    main()
+def agumentData():
+    augmentImages("train", train_seg_melanoma_dir, train_aug_melanoma_dir)
+    augmentImages("train", train_seg_benign_dir, train_aug_benign_dir)
+    augmentImages("validation", validation_seg_melanoma_dir, validation_aug_melanoma_dir)
+    augmentImages("validation", validation_seg_benign_dir, validation_aug_benign_dir)

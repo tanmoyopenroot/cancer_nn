@@ -2,6 +2,17 @@ import csv
 import shutil
 import numpy as np
 
+from config import image_folder_path, main_isic_path
+from config import csv_file_path, csv_file_name
+
+from config import image_extension
+
+from config import train_data_melanoma_dir, train_data_benign_dir
+from config import validation_data_melanoma_dir, validation_data_benign_dir
+from config import test_data_melanoma_dir, test_data_benign_dir
+
+from createDir import createDirectory
+
 def randomize(dataset):
     permutation = np.random.permutation(len(dataset))
     shuffled_dataset = dataset[permutation]
@@ -35,47 +46,30 @@ def readCSV(path, file):
 
     return cancer_image_name_dataset, non_cancer_image_name_dataset
 
-def seperateData(from_path, to_path, image_extension, cancer_image_name_dataset, non_cancer_image_name_dataset):
+def seperateData(cancer_image_name_dataset, non_cancer_image_name_dataset):
     validation_len = 72
     train_len = 288
     test_len = 8
 
-    train_melanoma_path = to_path + "train/melanoma/"
-    train_benign_path = to_path + "train/benign/"
-
-    validation_melanoma_path = to_path + "validation/melanoma/"
-    validation_benign_path = to_path + "validation/benign/"
-
-    test_melanoma_path = to_path + "test/melanoma/"
-    test_benign_path = to_path + "test/benign/"
-
     for index, image in enumerate(cancer_image_name_dataset):
         if index < train_len:
-            shutil.copy2(from_path + image + image_extension, train_melanoma_path)
+            shutil.copy2(image_folder_path + image + image_extension, train_data_melanoma_dir)
         elif index < (train_len + validation_len):
-            shutil.copy2(from_path + image + image_extension, validation_melanoma_path)
+            shutil.copy2(image_folder_path + image + image_extension, validation_data_melanoma_dir)
         else:
-            shutil.copy2(from_path + image + image_extension, test_melanoma_path)
+            shutil.copy2(image_folder_path + image + image_extension, test_data_melanoma_dir)
 
     for index, image in enumerate(non_cancer_image_name_dataset):
         if index < train_len:
-            shutil.copy2(from_path + image + image_extension, train_benign_path)
+            shutil.copy2(image_folder_path + image + image_extension, train_data_benign_dir)
         elif index < (train_len + validation_len):
-            shutil.copy2(from_path + image + image_extension, validation_benign_path)
+            shutil.copy2(image_folder_path + image + image_extension, validation_data_benign_dir)
         else:
-            shutil.copy2(from_path + image + image_extension, test_benign_path)
+            shutil.copy2(image_folder_path + image + image_extension, test_data_benign_dir)
             
 
-def main():
-    image_folder_path = "/home/openroot/Tanmoy/Working Stuffs/myStuffs/ISIC-2017/ISIC-2017/"
-    main_isic_path = "/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/"
-
-    csv_file_path = "/home/openroot/Tanmoy/Working Stuffs/myStuffs/havss-tf/ISIC-2017/data/"
-    csv_file_name = "ISIC-2017-label.csv"
-
-    image_extension = ".jpg"
-    resized_image_size = (100, 70)
-    pixel_depth = 255
+def createDataset():
+    createDirectory()
 
     print("Reading CSV FILE")
     cancer_image_name_dataset, non_cancer_image_name_dataset = readCSV(csv_file_path, csv_file_name)
@@ -87,8 +81,5 @@ def main():
     print non_cancer_image_name_dataset[0:10]
 
     print("Creating Training, Validation And Testing")
-    seperateData(image_folder_path, main_isic_path, image_extension, cancer_image_name_dataset, non_cancer_image_name_dataset)
-
-if __name__ == '__main__':
-    main()
+    seperateData(cancer_image_name_dataset, non_cancer_image_name_dataset)
     

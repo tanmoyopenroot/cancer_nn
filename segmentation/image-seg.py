@@ -1,6 +1,14 @@
-import numpy as np
+import glob
+
 import cv2
+import numpy as np
 from matplotlib import pyplot as plt
+
+from config import train_data_melanoma_dir, train_data_benign_dir
+from config import validation_data_melanoma_dir, validation_data_benign_dir
+
+from config import train_seg_melanoma_dir, train_seg_benign_dir
+from config import validation_seg_melanoma_dir, validation_seg_benign_dir
 
 def autoCannyEdgeDetection(img, sigma = 0.7):
 	v = np.median(img)
@@ -114,13 +122,13 @@ def generateMask(img):
     hsv, hue, sat, val = getHSVImage(blured_img)
     # binary_img_hsv = binaryIMG(blured_img)
 
-    cv2.namedWindow('hsv', cv2.WINDOW_NORMAL)
-    cv2.imshow("hsv", hsv)
+    # cv2.namedWindow('hsv', cv2.WINDOW_NORMAL)
+    # cv2.imshow("hsv", hsv)
 
     hsv += 35
 
-    cv2.namedWindow('hsv-inc', cv2.WINDOW_NORMAL)
-    cv2.imshow("hsv-inc", hsv)
+    # cv2.namedWindow('hsv-inc', cv2.WINDOW_NORMAL)
+    # cv2.imshow("hsv-inc", hsv)
 
     gray = getBinaryImage(hsv)
     filtered_img = getFilterImage(gray)
@@ -133,18 +141,18 @@ def generateMask(img):
     # convex_img = drawConvexHull(hsv, contours) 
     dilation_img = getDilationImage(binary_line_img)
 
-    cv2.namedWindow('gray', cv2.WINDOW_NORMAL)
-    cv2.imshow("gray", gray)       
-    cv2.namedWindow('canny-edge', cv2.WINDOW_NORMAL)
-    cv2.imshow("canny-edge", canny_edge_img)
-    cv2.namedWindow('contour', cv2.WINDOW_NORMAL)
-    cv2.imshow("contour", contour_img)    
-    cv2.namedWindow('dilation', cv2.WINDOW_NORMAL)
-    cv2.imshow("dilation", dilation_img)    
+    # cv2.namedWindow('gray', cv2.WINDOW_NORMAL)
+    # cv2.imshow("gray", gray)       
+    # cv2.namedWindow('canny-edge', cv2.WINDOW_NORMAL)
+    # cv2.imshow("canny-edge", canny_edge_img)
+    # cv2.namedWindow('contour', cv2.WINDOW_NORMAL)
+    # cv2.imshow("contour", contour_img)    
+    # cv2.namedWindow('dilation', cv2.WINDOW_NORMAL)
+    # cv2.imshow("dilation", dilation_img)    
     # cv2.namedWindow('convex', cv2.WINDOW_NORMAL)
     # cv2.imshow("convex", convex_img)  
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
     return dilation_img
 
@@ -152,19 +160,28 @@ def extractRegion(img, mask):
     processed_img = cv2.bitwise_and(img,img,mask = mask)
     return processed_img
 
+def segmentImages(train_or_valid, image_dir, img_save_dir):
+    if train_or_valid == "train":
+        # Training
+        print("Segmenting Training Data")
+    else:
+       
+        # Validation
+        print("Segmenting Validation Data")
+    image_set = glob.glob(image_dir + "*.jpg")
+    image_len = len(image_set)
 
-def main():
-    img = cv2.imread("../data/aug/train/benign/ISIC_0000201.jpg_aug0.jpg")
-    # img = cv2.imread("../data/aug/train/benign/ISIC_0000011.jpg_aug0.jpg")
-    # img = cv2.imread("../data/aug/train/benign/ISIC_0000113.jpg_aug0.jpg")
-    # img = cv2.imread("../data/aug/train/benign/ISIC_0009344.jpg_aug12.jpg")
+    for index, img in enumerate(image_set):
+        img_name = img.split("/")[-1] 
+        x = cv2.imread(img, cv2.IMREAD_COLOR)
+        # print x.shape
+        print("Segmenting Image : {0} / {1} - {2}".format(index, image_len, img_name))
+        mask = generateMask(x)
+        segment_img = extractRegion(img, mask)
+        cv2.imwrite(img_save_dir + img_name + "_seg" + ".jpg", segment_img)
 
-    mask = generateMask(img)
-    final = extractRegion(img, mask)
-    cv2.namedWindow('final', cv2.WINDOW_NORMAL)
-    cv2.imshow("final", final)  
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-if __name__ == '__main__':
-    main()
+def segmentData():
+    segmentImages("train", train_data_melanoma_dir, train_seg_melanoma_dir)
+    segmentImages("train", train_data_benign_dir, train_seg_benign_dir)
+    segmentImages("validation", validation_data_melanoma_dir, validation_seg_melanoma_dir)
+    segmentImages("validation", validation_data_benign_dir, validation_seg_benign_dir)
