@@ -1,3 +1,6 @@
+import sys
+sys.path.append('../')
+
 import glob
 
 import cv2
@@ -157,7 +160,7 @@ def generateMask(img):
     return dilation_img
 
 def extractRegion(img, mask):
-    processed_img = cv2.bitwise_and(img,img,mask = mask)
+    processed_img = cv2.bitwise_and(img, img, mask = mask)
     return processed_img
 
 def segmentImages(train_or_valid, image_dir, img_save_dir):
@@ -177,7 +180,7 @@ def segmentImages(train_or_valid, image_dir, img_save_dir):
         # print x.shape
         print("Segmenting Image : {0} / {1} - {2}".format(index, image_len, img_name))
         mask = generateMask(x)
-        segment_img = extractRegion(img, mask)
+        segment_img = extractRegion(x, mask)
         cv2.imwrite(img_save_dir + img_name + "_seg" + ".jpg", segment_img)
 
 def segmentData():
@@ -185,3 +188,5 @@ def segmentData():
     segmentImages("train", train_data_benign_dir, train_seg_benign_dir)
     segmentImages("validation", validation_data_melanoma_dir, validation_seg_melanoma_dir)
     segmentImages("validation", validation_data_benign_dir, validation_seg_benign_dir)
+
+segmentData()
