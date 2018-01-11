@@ -24,6 +24,9 @@ validation_data_benign_dir =  path +  "validation/benign/"
 test_data_melanoma_dir =  path +  "test/melanoma/"
 test_data_benign_dir =  path +  "test/benign/"
 
+# Ground Truth
+ground_truth_data_dir = path + "ISIC-2017-GroundTruth/"
+
 # Train Augment Files
 train_aug_melanoma_dir =  path +  "aug/train/melanoma/"
 train_aug_benign_dir =  path +  "aug/train/benign/"
