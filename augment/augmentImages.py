@@ -1,3 +1,6 @@
+import sys
+sys.path.append('../')
+
 import glob
 
 import cv2
@@ -67,25 +70,26 @@ def augment(x, aug_no, img_save_dir, img_name):
         else:
             h_flip = False
         augmented_img = processImage(x, h_flip)
-        cv2.imwrite(img_save_dir + img_name + "_aug" + str(i) + ".jpg", augmented_img)
+        cv2.imwrite(img_save_dir + img_name + "_aug_" + str(i) + ".jpg", augmented_img)
 
 def augmentImages(train_or_valid, image_dir, img_save_dir):
     if train_or_valid == "train":
         # Training
         print("Augment Training Data")
     else:
-       
         # Validation
         print("Augment Validation Data")
+    
     image_set = glob.glob(image_dir + "*.jpg")
     aug_no = 16
     image_len = len(image_set)
 
     for index, img in enumerate(image_set):
-        img_name = img.split("/")[-1] 
+        img_name_with_ext = img.split("/")[-1]
+        img_name = (img_name_with_ext).split(".")[0]
         x = cv2.imread(img, cv2.IMREAD_COLOR)
         # print x.shape
-        print("Augmenting Image : {0} / {1} - {2}".format(index, image_len, img_name))
+        print("Augmenting Image : {0} / {1} - {2}".format(index, image_len, img_name_with_ext))
         augment(x, aug_no, img_save_dir, img_name)
 
 
@@ -94,3 +98,5 @@ def agumentData():
     augmentImages("train", train_seg_benign_dir, train_aug_benign_dir)
     augmentImages("validation", validation_seg_melanoma_dir, validation_aug_melanoma_dir)
     augmentImages("validation", validation_seg_benign_dir, validation_aug_benign_dir)
+
+agumentData()
