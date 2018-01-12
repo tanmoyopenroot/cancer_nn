@@ -1,6 +1,8 @@
 # Skin Cancer Classification
 ISIC 2017: Skin Lesion Analysis Towards Melanoma Detection (Lesion Classification)
 
+This study proposes the use of deep learning algorithms to detect the presence of skin cancer, specifically melanoma, from images of skin lesions taken by a standard camera. Skin cancer is the most prevalent form of cancer in the US where 3.3 million people get treated each year. The 5-year survival rate of melanoma is 98% when detected and treated early yet over 10,000 people are lost each year due mostly to late-stage diagnoses. Thus, there is a need to make melanoma screening and diagnoses methods cheaper, quicker, simpler, and more accessible. This study aims to produce an inexpensive and fast computer-vision based machine learning tool that can be used by doctors and patients to track and classify suspicious skin lesions as benign or malignant with adequate accuracy using only a cell phone camera.
+
 Required install:
 
 ```
