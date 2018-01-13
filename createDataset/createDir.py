@@ -9,6 +9,8 @@ from config import validation_aug_melanoma_dir, validation_aug_benign_dir
 from config import train_seg_melanoma_dir, train_seg_benign_dir
 from config import validation_seg_melanoma_dir, validation_seg_benign_dir
 
+from config import train_transfer_melanoma_dir, train_transfer_benign_dir
+from config import validation_transfer_melanoma_dir, validation_transfer_benign_dir
 
 def createDirectory():
     if not os.path.exists(train_data_melanoma_dir):
@@ -98,4 +100,29 @@ def createDirectory():
         try:
             os.makedirs(validation_seg_benign_dir)
         except Exception as e:
-            raise e           
+            raise e  
+
+
+    if not os.path.exists(train_transfer_melanoma_dir):
+        try:
+            os.makedirs(train_transfer_melanoma_dir)
+        except Exception as e:
+            raise e
+
+    if not os.path.exists(train_transfer_benign_dir):
+        try:
+            os.makedirs(train_transfer_benign_dir)
+        except Exception as e:
+            raise e
+
+    if not os.path.exists(validation_transfer_melanoma_dir):
+        try:
+            os.makedirs(validation_transfer_melanoma_dir)
+        except Exception as e:
+            raise e
+
+    if not os.path.exists(validation_transfer_benign_dir):
+        try:
+            os.makedirs(validation_transfer_benign_dir)
+        except Exception as e:
+            raise e               

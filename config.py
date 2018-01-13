@@ -10,7 +10,10 @@ csv_file_name = "ISIC-2017-label.csv"
 
 image_extension = ".jpg"
 resized_image_size = (100, 70)
-pixel_depth = 255
+pixel_depth = 255.0
+
+# Save Graph Path
+save_graph_path = path + "graph/"
 
 # Train Files
 train_data_melanoma_dir =  path + "train/melanoma/"
@@ -43,6 +46,14 @@ train_seg_benign_dir = path + "seg/train/benign/"
 validation_seg_melanoma_dir = path + "seg/validation/melanoma/"
 validation_seg_benign_dir = path + "seg/validation/benign/"
 
+# Train Transfer Files
+train_transfer_melanoma_dir = path + "transfer_values/train/melanoma/"
+train_transfer_benign_dir = path + "transfer_values/train/benign/"
+
+# Validation Transfer Files
+validation_transfer_melanoma_dir = path + "transfer_values/validation/melanoma/"
+validation_transfer_benign_dir = path + "transfer_values/validation/benign/"
+
 # Train Numpy Files
 train_melanoma_file =  path +  "train/train-melanoma.npy"
 train_benign_file =  path +  "train/train-benign.npy"
@@ -62,3 +73,13 @@ augment_values = {
     "vertical_flip" : False,
     "rescale" : 1./255,
 }
+
+# Batch Size
+batch_size = 32
+
+# vgg16 required image height and width
+img_width, img_height = 224, 224
+
+# Sample Size
+nb_train_samples = 9216
+nb_validation_samples = 2304
