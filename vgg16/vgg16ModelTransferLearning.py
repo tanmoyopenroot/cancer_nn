@@ -1,3 +1,6 @@
+import sys
+sys.path.append('../')
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -13,16 +16,13 @@ img_width, img_height = 224, 224
 
 top_model_weights_path = "isic-vgg16-transfer-learning-weights.h5"
 
-train_data_dir = '../data/train'
-validation_data_dir = '../data/validation'
-
-train_aug_data_dir = '../data/aug/train'
-validation_aug_data_dir = "../data/aug/validation"
+from config import train_transfer_melanoma_dir, train_transfer_benign_dir
+from config import validation_transfer_melanoma_dir, validation_transfer_benign_dir
 
 nb_train_samples = 9216
 nb_validation_samples = 2304
 
-epochs = 1500
+epochs = 50
 
 batch_size = 32
 
@@ -129,32 +129,37 @@ def saveBottleneckTransferValues():
 
 
 def trainTopModel():
-    train_data = np.load(open("train-transfer-values.npy"))
-    print train_data.shape
+    train_data_melanoma = np.load(open( train_transfer_melanoma_dir + "transfer-values.npy"))
+    train_data_benign = np.load(open( train_transfer_benign_dir + "transfer-values.npy"))
+    train_data = np.concatenate((train_data_melanoma, train_data_benign), axis=0)
+    print("Train Shape : {0}".format(train_data.shape))
     train_labels = np.array(
         [0] * (nb_train_samples / 2) + [1] * (nb_train_samples / 2))
 
-    validation_data = np.load(open("validation-transfer-values.npy"))
+    valid_data_melanoma = np.load(open( validation_transfer_melanoma_dir + "transfer-values.npy"))
+    valid_data_benign = np.load(open( validation_transfer_melanoma_dir + "transfer-values.npy"))
+    validation_data = np.concatenate((valid_data_melanoma, valid_data_benign), axis=0)
+    print("Validation Shape : {0}".format(validation_data.shape))
     validation_labels = np.array(
         [0] * (nb_validation_samples / 2) + [1] * (nb_validation_samples / 2))
 
     model = Sequential()
 
     model.add(Dense(256, input_shape = train_data.shape[1:], activation="relu"))
-    model.add(Dropout(0.5))    
+    # model.add(Dropout(0.5))    
     # model.add(Dense(4096, activation="relu"))
     model.add(Dense(1, activation="sigmoid"))
 
-    # model.compile(
-    #     optimizer="rmsprop",
-    #     loss="binary_crossentropy",
-    #     metrics=["accuracy"]
-    # )
-
-    model.compile(loss='binary_crossentropy',
-        optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
-        metrics=['accuracy']
+    model.compile(
+        optimizer="rmsprop",
+        loss="binary_crossentropy",
+        metrics=["accuracy"]
     )
+
+    # model.compile(loss='binary_crossentropy',
+    #     optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
+    #     metrics=['accuracy']
+    # )
 
     '''
     view_transfer_value = TensorBoard(
@@ -187,7 +192,7 @@ def trainTopModel():
                         # callbacks = callbacks_list
                         )
 
-    model.save_weights(top_model_weights_path)
+    # model.save_weights(top_model_weights_path)
 
     # plot Training
     plotTraining(history)

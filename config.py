@@ -47,12 +47,12 @@ validation_seg_melanoma_dir = path + "seg/validation/melanoma/"
 validation_seg_benign_dir = path + "seg/validation/benign/"
 
 # Train Transfer Files
-train_transfer_melanoma_dir = "transfer_values/train/melanoma/"
-train_transfer_benign_dir = "transfer_values/train/benign/"
+train_transfer_melanoma_dir = path + "transfer_values/train/melanoma/"
+train_transfer_benign_dir = path + "transfer_values/train/benign/"
 
 # Validation Transfer Files
-validation_transfer_melanoma_dir = "transfer_values/validation/melanoma/"
-validation_transfer_benign_dir = "transfer_values/validation/benign/"
+validation_transfer_melanoma_dir = path + "transfer_values/validation/melanoma/"
+validation_transfer_benign_dir = path + "transfer_values/validation/benign/"
 
 # Train Numpy Files
 train_melanoma_file =  path +  "train/train-melanoma.npy"
@@ -61,6 +61,14 @@ train_benign_file =  path +  "train/train-benign.npy"
 # Validation Numpy Files
 validation_melanoma_file =  path +  "validation/validation-melanoma.npy"
 validation_benign_file =  path +  "validation/validation-benign.npy"
+
+# Traansformed Train Numpy Files
+trans_train_melanoma_dir =  path +  "transformed_data/train/melanoma/"
+trans_train_benign_dir =  path +  "transformed_data/train/benign/"
+
+# Traansformed Validation Numpy Files
+trans_validation_melanoma_dir =  path +  "transformed_data/validation/melanoma/"
+trans_validation_benign_dir =  path +  "transformed_data/validation/benign/"
 
 # Augment Values
 augment_values = {
